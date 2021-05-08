@@ -1,0 +1,40 @@
+!.mvn/wrapper/maven-wrapper.jar
+
+target/
+!**/src/main/resources/rebel.xml
+
+!**/src/main/**/target/
+!**/src/test/**/target/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+### NetBeans ###
+derby.log
+/log.path_IS_UNDEFINED
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+### VS Code ###
+.vscode/
+/logs/
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
