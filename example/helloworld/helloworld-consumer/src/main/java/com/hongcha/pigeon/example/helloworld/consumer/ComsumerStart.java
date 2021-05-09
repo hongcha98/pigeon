@@ -22,10 +22,9 @@ public class ComsumerStart {
                 String nextLine = scanner.nextLine();
                 helloWorldService.print(nextLine);
                 System.out.println("helloWorldService.reverse(nextLine) = " + helloWorldService.reverse(nextLine));
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
     }
 }

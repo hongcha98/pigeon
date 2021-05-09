@@ -1,29 +1,24 @@
 package com.hongcha.pigeon.spring;
 
-import com.hongcha.pigeon.core.PigeonConfig;
 import com.hongcha.pigeon.core.service.annotations.PigeonService;
 import com.hongcha.pigeon.core.utils.ClassUtil;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
 import java.util.Set;
 
 
-public class PigeonBeanFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor {
-    @Autowired
-    PigeonConfig pigeonConfig;
-
-    public PigeonBeanFactoryPostProcessor(PigeonConfig pigeonConfig) {
-        this.pigeonConfig = pigeonConfig;
-    }
+public class PigeonBeanFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware {
+    private Environment environment;
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        String[] scanPackages = pigeonConfig.getPackages();
+        String[] scanPackages = environment.getRequiredProperty(PigeonSpringConstant.PREFIX + "." + PigeonSpringConstant.PACKAGES, String[].class);
         Set<Class<?>> classes = ClassUtil.getClasses(scanPackages);
         classes
                 .stream()
@@ -41,5 +36,10 @@ public class PigeonBeanFactoryPostProcessor implements BeanDefinitionRegistryPos
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 }

@@ -1,7 +1,8 @@
 pigeon:
   config:
     port: 30802
-    packages: com.hongcha.pigeon.example.helloworld.producer
-    address: 127.0.0.1:2181
-    username:
-    password:
+    packages:
+    registry:
+      address: 127.0.0.1:2181
+      username:
+      password:
