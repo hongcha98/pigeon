@@ -19,30 +19,18 @@ import java.util.Set;
 public class Pigeon {
     private PigeonConfig pigeonConfig;
 
-    private ServiceRegistry serviceRegistry;
+    protected ServiceRegistry serviceRegistry;
 
-    private RemotingClinet remotingClinet;
+    protected RemotingClinet remotingClinet;
 
-    private RemotingServer remotingServer;
-
-    protected PigeonConfig getPigeonConfig() {
-        return pigeonConfig;
-    }
-
-    protected ServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
-    }
-
-    protected RemotingClinet getRemotingClinet() {
-        return remotingClinet;
-    }
-
-    protected RemotingServer getRemotingServer() {
-        return remotingServer;
-    }
+    protected RemotingServer remotingServer;
 
     public Pigeon(PigeonConfig pigeonConfig) {
         this.pigeonConfig = pigeonConfig;
+    }
+
+    public PigeonConfig getPigeonConfig() {
+        return pigeonConfig;
     }
 
     public void start() {
