@@ -1,7 +1,7 @@
 package com.hongcha.pigeon.core.proxy;
 
 import com.hongcha.pigeon.core.registry.FoundService;
-import com.hongcha.pigeon.core.remoting.RemotingClinet;
+import com.hongcha.pigeon.core.remoting.RemotingClient;
 import com.hongcha.pigeon.core.service.metadata.Service;
 import com.hongcha.pigeon.core.service.metadata.ServiceAddress;
 
@@ -13,17 +13,17 @@ public class ServiceProxy implements InvocationHandler {
 
     private final FoundService foundService;
 
-    private final RemotingClinet remotingClinet;
+    private final RemotingClient remotingClient;
 
-    public ServiceProxy(Service service, FoundService foundService, RemotingClinet remotingClinet) {
+    public ServiceProxy(Service service, FoundService foundService, RemotingClient remotingClient) {
         this.service = service;
         this.foundService = foundService;
-        this.remotingClinet = remotingClinet;
+        this.remotingClient = remotingClient;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         ServiceAddress serviceAddress = foundService.foundService(service);
-        return remotingClinet.sendSync(serviceAddress, service, method.getName(), args);
+        return remotingClient.sendSync(serviceAddress, service, method.getName(), args);
     }
 }

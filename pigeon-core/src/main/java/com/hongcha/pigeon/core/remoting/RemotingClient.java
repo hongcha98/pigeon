@@ -14,16 +14,25 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RemotingClinet extends AbstractRemoting {
+public class RemotingClient extends AbstractRemoting {
     private final Map<ServiceAddress, Channel> serviceAddressBootstrapMap = new ConcurrentHashMap<>();
     private final EventLoopGroup eventLoopGroupWorker;
     private final ClientHandler clientHandler;
+    private final Bootstrap bootstrap;
 
-    public RemotingClinet() {
+    public RemotingClient() {
         eventLoopGroupWorker = new NioEventLoopGroup();
         clientHandler = new ClientHandler();
+        bootstrap = new Bootstrap();
+        bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class).option(
+                ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        socketChannel.pipeline().addLast(new ProtocolDecoder(), new ProtocolEecoder(), clientHandler);
+                    }
+                });
     }
-
 
     public Object sendSync(ServiceAddress serviceAddress, Service service, String methodName, Object[] params) throws InterruptedException {
         return sendSync(serviceAddress, buildRequest(service, methodName, params));
@@ -34,15 +43,6 @@ public class RemotingClinet extends AbstractRemoting {
         if (channel == null || !channel.isActive()) {
             if (channel != null) channel.close().sync();
             serviceAddressBootstrapMap.remove(serviceAddress);
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class).option(
-                    ChannelOption.TCP_NODELAY, true).option(ChannelOption.SO_KEEPALIVE, true)
-                    .handler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new ProtocolDecoder(), new ProtocolEecoder(), clientHandler);
-                        }
-                    });
             ChannelFuture future = bootstrap.connect(serviceAddress.getIp(), serviceAddress.getPort()).sync();
             channel = future.channel();
             channel.closeFuture();

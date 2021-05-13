@@ -3,7 +3,7 @@ package com.hongcha.pigeon.core;
 import com.hongcha.pigeon.core.proxy.ServiceProxy;
 import com.hongcha.pigeon.core.registry.ServiceRegistry;
 import com.hongcha.pigeon.core.registry.impl.ZookeeperServiceRegistry;
-import com.hongcha.pigeon.core.remoting.RemotingClinet;
+import com.hongcha.pigeon.core.remoting.RemotingClient;
 import com.hongcha.pigeon.core.remoting.RemotingServer;
 import com.hongcha.pigeon.core.service.annotations.PigeonService;
 import com.hongcha.pigeon.core.service.handler.ServiceHandler;
@@ -21,7 +21,7 @@ public class Pigeon {
 
     protected ServiceRegistry serviceRegistry;
 
-    protected RemotingClinet remotingClinet;
+    protected RemotingClient remotingClient;
 
     protected RemotingServer remotingServer;
 
@@ -40,7 +40,7 @@ public class Pigeon {
     }
 
     protected void startRemoting(Map<Service, Object> serviceObjectMap) {
-        remotingClinet = new RemotingClinet();
+        remotingClient = new RemotingClient();
         remotingServer = new RemotingServer(pigeonConfig.getPort(), serviceObjectMap);
         remotingServer.start();
     }
@@ -97,7 +97,7 @@ public class Pigeon {
 
     public <T> T getProxy(Class<T> clazz, String group, String version) {
         Service service = new Service(clazz.getName(), group, version);
-        return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, new ServiceProxy(service, serviceRegistry, remotingClinet));
+        return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, new ServiceProxy(service, serviceRegistry, remotingClient));
     }
 
 }

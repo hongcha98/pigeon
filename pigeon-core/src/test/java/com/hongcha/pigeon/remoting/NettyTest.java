@@ -1,6 +1,6 @@
 package com.hongcha.pigeon.remoting;
 
-import com.hongcha.pigeon.core.remoting.RemotingClinet;
+import com.hongcha.pigeon.core.remoting.RemotingClient;
 import com.hongcha.pigeon.core.remoting.RemotingServer;
 import com.hongcha.pigeon.core.remoting.RpcMessage;
 import com.hongcha.pigeon.core.service.metadata.ServiceAddress;
@@ -17,10 +17,10 @@ public class NettyTest {
 
     @Test
     public void startClient() throws InterruptedException {
-        RemotingClinet remotingClinet = new RemotingClinet();
+        RemotingClient remotingClient = new RemotingClient();
         RpcMessage rpcMessage = new RpcMessage();
         rpcMessage.setId(1);
-        Object o = remotingClinet.sendSync(new ServiceAddress("127.0.0.1", 9090), rpcMessage);
+        Object o = remotingClient.sendSync(new ServiceAddress("127.0.0.1", 9090), rpcMessage);
         System.out.println(o);
     }
 }
