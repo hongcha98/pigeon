@@ -3,12 +3,15 @@ package com.hongcha.pigeon.core;
 import com.hongcha.pigeon.core.proxy.ServiceProxy;
 import com.hongcha.pigeon.core.registry.ServiceRegistry;
 import com.hongcha.pigeon.core.registry.impl.ZookeeperServiceRegistry;
-import com.hongcha.pigeon.core.remoting.RemotingClient;
-import com.hongcha.pigeon.core.remoting.RemotingServer;
 import com.hongcha.pigeon.core.service.annotations.PigeonService;
 import com.hongcha.pigeon.core.service.handler.ServiceHandler;
 import com.hongcha.pigeon.core.service.metadata.Service;
 import com.hongcha.pigeon.core.utils.ClassUtil;
+import com.hongcha.remoting.core.RemotingClient;
+import com.hongcha.remoting.core.RemotingFactory;
+import com.hongcha.remoting.core.RemotingServer;
+import com.hongcha.remoting.core.config.RemotingConfig;
+import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
@@ -34,15 +37,27 @@ public class Pigeon {
     }
 
     public void start() {
+        RemotingFactory.getCodeBodyTypeFactory().register(0, RpcMessage.class);
         Map<Service, Object> serviceObjectMap = searchPigeon();
         startRegistry(serviceObjectMap.keySet());
         startRemoting(serviceObjectMap);
     }
 
     protected void startRemoting(Map<Service, Object> serviceObjectMap) {
-        remotingClient = new RemotingClient();
-        remotingServer = new RemotingServer(pigeonConfig.getPort(), serviceObjectMap);
-        remotingServer.start();
+        RemotingConfig remotingConfig = new RemotingConfig();
+        remotingConfig.setPort(pigeonConfig.getPort());
+        remotingServer = new RemotingServer(remotingConfig);
+        remotingClient = new RemotingClient(remotingConfig);
+        try {
+            remotingServer.init();
+            remotingServer.registerProcess(0, new PigeonRequestProcess(serviceObjectMap), new NioEventLoopGroup(1));
+            remotingServer.start();
+            remotingClient.init();
+            remotingClient.start();
+        } catch (Exception e) {
+
+        }
+
     }
 
     protected void startRegistry(Set<Service> serviceList) {

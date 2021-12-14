@@ -1,15 +1,10 @@
-package com.hongcha.pigeon.core.remoting;
-
+package com.hongcha.pigeon.core;
 
 import com.hongcha.pigeon.core.service.metadata.Service;
 
 import java.io.Serializable;
 
 public class RpcMessage implements Serializable {
-    /**
-     * 消息id
-     */
-    private int id;
     /**
      * service提供商
      */
@@ -23,19 +18,8 @@ public class RpcMessage implements Serializable {
      */
     private Object[] params;
 
-    /**
-     * 返回体
-     */
+
     private Object body;
-
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public Service getService() {
         return service;
@@ -68,5 +52,4 @@ public class RpcMessage implements Serializable {
     public void setBody(Object body) {
         this.body = body;
     }
-
 }
