@@ -7,10 +7,9 @@ import com.hongcha.pigeon.core.service.annotations.PigeonService;
 import com.hongcha.pigeon.core.service.handler.ServiceHandler;
 import com.hongcha.pigeon.core.service.metadata.Service;
 import com.hongcha.pigeon.core.utils.ClassUtil;
-import com.hongcha.remoting.core.RemotingClient;
-import com.hongcha.remoting.core.RemotingFactory;
-import com.hongcha.remoting.core.RemotingServer;
-import com.hongcha.remoting.core.config.RemotingConfig;
+import com.hongcha.remote.core.RemoteClient;
+import com.hongcha.remote.core.RemoteServer;
+import com.hongcha.remote.core.config.RemoteConfig;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.io.Serializable;
@@ -24,9 +23,9 @@ public class Pigeon {
 
     protected ServiceRegistry serviceRegistry;
 
-    protected RemotingClient remotingClient;
+    protected RemoteClient remoteClient;
 
-    protected RemotingServer remotingServer;
+    protected RemoteServer remoteServer;
 
     public Pigeon(PigeonConfig pigeonConfig) {
         this.pigeonConfig = pigeonConfig;
@@ -37,23 +36,34 @@ public class Pigeon {
     }
 
     public void start() {
-        RemotingFactory.getCodeBodyTypeFactory().register(0, RpcMessage.class);
         Map<Service, Object> serviceObjectMap = searchPigeon();
         startRegistry(serviceObjectMap.keySet());
-        startRemoting(serviceObjectMap);
+        startRemote(serviceObjectMap);
     }
 
-    protected void startRemoting(Map<Service, Object> serviceObjectMap) {
-        RemotingConfig remotingConfig = new RemotingConfig();
-        remotingConfig.setPort(pigeonConfig.getPort());
-        remotingServer = new RemotingServer(remotingConfig);
-        remotingClient = new RemotingClient(remotingConfig);
+
+    public void close() {
         try {
-            remotingServer.init();
-            remotingServer.registerProcess(0, new PigeonRequestProcess(serviceObjectMap), new NioEventLoopGroup(1));
-            remotingServer.start();
-            remotingClient.init();
-            remotingClient.start();
+            remoteClient.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            remoteServer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void startRemote(Map<Service, Object> serviceObjectMap) {
+        RemoteConfig RemoteConfig = new RemoteConfig();
+        RemoteConfig.setPort(pigeonConfig.getPort());
+        remoteServer = new RemoteServer(RemoteConfig);
+        remoteClient = new RemoteClient(RemoteConfig);
+        try {
+            remoteServer.registerProcess(0, new PigeonRequestProcess(serviceObjectMap), new NioEventLoopGroup(1));
+            remoteServer.start();
+            remoteClient.start();
         } catch (Exception e) {
 
         }
@@ -112,7 +122,7 @@ public class Pigeon {
 
     public <T> T getProxy(Class<T> clazz, String group, String version) {
         Service service = new Service(clazz.getName(), group, version);
-        return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, new ServiceProxy(service, serviceRegistry, remotingClient));
+        return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, new ServiceProxy(service, serviceRegistry, remoteClient));
     }
 
 }

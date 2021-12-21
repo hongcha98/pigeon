@@ -4,22 +4,25 @@ import com.hongcha.pigeon.core.RpcMessage;
 import com.hongcha.pigeon.core.registry.FoundService;
 import com.hongcha.pigeon.core.service.metadata.Service;
 import com.hongcha.pigeon.core.service.metadata.ServiceAddress;
-import com.hongcha.remoting.common.dto.RequestCommon;
-import com.hongcha.remoting.common.dto.RequestMessage;
-import com.hongcha.remoting.core.RemotingClient;
-import com.hongcha.remoting.core.RemotingFactory;
+import com.hongcha.remote.common.RequestCommon;
+import com.hongcha.remote.core.RemoteClient;
+import com.hongcha.remote.core.util.RemoteUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServiceProxy implements InvocationHandler {
     private final Service service;
 
     private final FoundService foundService;
 
-    private final RemotingClient remotingClient;
+    private final RemoteClient remotingClient;
 
-    public ServiceProxy(Service service, FoundService foundService, RemotingClient remotingClient) {
+    public ServiceProxy(Service service, FoundService foundService, RemoteClient remotingClient) {
         this.service = service;
         this.foundService = foundService;
         this.remotingClient = remotingClient;
@@ -28,35 +31,33 @@ public class ServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         ServiceAddress serviceAddress = foundService.foundService(service);
-        RequestMessage requestMessage = new RequestMessage();
-        requestMessage.setCode(0);
-        requestMessage.setProtocol((byte) 2);
-        requestMessage.setDirection(false);
+        RequestCommon request = new RequestCommon();
+        request.setCode(0);
+        request.setProtocol((byte) 2);
+        request.setDirection(false);
 
         RpcMessage rpcMessage = new RpcMessage();
         rpcMessage.setService(service);
         rpcMessage.setMethodName(method.getName());
         rpcMessage.setParams(args);
+        rpcMessage.setParamTypes(buildParamTypes(method));
+        request.setBody(RemoteUtils.encode(request.getProtocol(), rpcMessage));
 
-        requestMessage.setMsg(rpcMessage);
+        CompletableFuture<RequestCommon> future = remotingClient.send(serviceAddress.getIp(), serviceAddress.getPort(), request);
 
-        RequestMessage resp = buildRequestMessage(remotingClient.send(serviceAddress.getIp(), serviceAddress.getPort(), requestMessage).get());
+        RequestCommon resp = future.get(30, TimeUnit.SECONDS);
 
-        RpcMessage msg = (RpcMessage) resp.getMsg();
+        Class<?> returnType = method.getReturnType();
 
-        return msg.getBody();
+        if (returnType == Void.class) {
+            return null;
+        }
+
+        return RemoteUtils.getBody(resp, RpcMessage.class).getBody();
     }
 
-    protected RequestMessage buildRequestMessage(RequestCommon requestCommon) {
-        RequestMessage requestMessage = new RequestMessage();
-        requestMessage.setCode(requestCommon.getCode());
-        requestMessage.setProtocol(requestCommon.getProtocol());
-        requestMessage.setDirection(requestCommon.getDirection());
-        requestMessage.setHeaders(requestCommon.getHeaders());
-        Object msg = RemotingFactory.getBody(requestCommon);
-        requestMessage.setMsg(msg);
-        return requestMessage;
+    private String[] buildParamTypes(Method method) {
+        return Stream.of(method.getParameterTypes()).map(Class::getName).collect(Collectors.toList()).toArray(new String[0]);
     }
-
 
 }

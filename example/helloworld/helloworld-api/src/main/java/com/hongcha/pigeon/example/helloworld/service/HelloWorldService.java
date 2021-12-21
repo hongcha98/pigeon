@@ -8,8 +8,21 @@ public interface HelloWorldService {
      */
     void print(String helloWorld);
 
+
+    void print(Object obj);
+
+
+    Long valueOf(String str)
+
+            ;
+    Long valueOf(String str,Object o);
+
+
+
+
     /**
      * 反转字符串
+     *
      * @param str
      * @return
      */

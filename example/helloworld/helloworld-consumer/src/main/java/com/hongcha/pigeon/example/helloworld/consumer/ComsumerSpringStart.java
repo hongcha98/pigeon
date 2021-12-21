@@ -18,14 +18,14 @@ public class ComsumerSpringStart {
         ComsumerSpringStart comsumerSpringStart = run.getBean(ComsumerSpringStart.class);
         Scanner scanner = new Scanner(System.in);
         while (true) {
+            System.out.println(1);
             try {
                 String nextLine = scanner.nextLine();
-                comsumerSpringStart.helloWorldService.print(nextLine);
-                System.out.println("helloWorldService.reverse(nextLine) = " + comsumerSpringStart.helloWorldService.reverse(nextLine));
-            }catch (Exception e){
+                System.out.println("helloWorldService.valueOf(nextLine) = " + comsumerSpringStart.helloWorldService.valueOf(nextLine));
+                System.out.println("comsumerSpringStart.helloWorldService.valueOf(nextLine,null) = " + comsumerSpringStart.helloWorldService.valueOf(nextLine, null));
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
-
         }
     }
 }

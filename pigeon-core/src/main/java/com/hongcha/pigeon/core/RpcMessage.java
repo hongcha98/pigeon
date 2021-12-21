@@ -14,9 +14,14 @@ public class RpcMessage implements Serializable {
      */
     private String methodName;
     /**
-     * 方法参数
+     * 方法请求参数
      */
     private Object[] params;
+
+    /**
+     * 方法参数类型
+     */
+    private String[] paramTypes;
 
 
     private Object body;
@@ -51,5 +56,13 @@ public class RpcMessage implements Serializable {
 
     public void setBody(Object body) {
         this.body = body;
+    }
+
+    public String[] getParamTypes() {
+        return paramTypes;
+    }
+
+    public void setParamTypes(String[] paramTypes) {
+        this.paramTypes = paramTypes;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 @Component
 public class PigeonSpring extends Pigeon implements BeanFactoryAware {
@@ -32,6 +33,11 @@ public class PigeonSpring extends Pigeon implements BeanFactoryAware {
         }
 
         LOG.info("pigeon complete");
+    }
+
+    @PreDestroy
+    public void destroy() {
+        super.close();
     }
 
 
