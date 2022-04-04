@@ -1,31 +1,30 @@
 package com.hongcha.pigeon.core;
 
-import com.hongcha.pigeon.core.error.PigeonException;
+import com.hongcha.pigeon.core.service.handler.ServiceHandlerFactory;
 import com.hongcha.pigeon.core.service.metadata.Service;
-import com.hongcha.remote.common.RequestCommon;
+import com.hongcha.remote.common.Message;
 import com.hongcha.remote.common.exception.RemoteExceptionBody;
-import com.hongcha.remote.common.process.RequestProcess;
-import com.hongcha.remote.core.util.RemoteUtils;
+import com.hongcha.remote.common.process.Process;
+import com.hongcha.remote.core.util.ProtocolUtils;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 
-public class PigeonRequestProcess implements RequestProcess {
-    protected final Map<Service, Object> serviceHandlerMap;
+public class PigeonRequestProcess implements Process {
+    protected final ServiceHandlerFactory serviceHandlerFactory;
 
-    public PigeonRequestProcess(Map<Service, Object> serviceHandlerMap) {
-        this.serviceHandlerMap = serviceHandlerMap;
+    public PigeonRequestProcess(ServiceHandlerFactory serviceHandlerFactory) {
+        this.serviceHandlerFactory = serviceHandlerFactory;
     }
 
     @Override
-    public void process(ChannelHandlerContext ctx, RequestCommon requestCommon) {
+    public void process(ChannelHandlerContext ctx, Message message) {
         try {
-            RpcMessage rpcMessage = RemoteUtils.getBody(requestCommon, RpcMessage.class);
+            RpcMessage rpcMessage = ProtocolUtils.decode(message, RpcMessage.class);
             Service service = rpcMessage.getService();
-            Object handler = getHandler(service);
+            Object handler = serviceHandlerFactory.getHandler(service);
             Object[] params = rpcMessage.getParams();
             Class<?>[] paramTypes = getParamType(rpcMessage.getParamTypes());
             Method invokeMethod = handler.getClass().getDeclaredMethod(rpcMessage.getMethodName(), paramTypes);
@@ -33,13 +32,13 @@ public class PigeonRequestProcess implements RequestProcess {
             rpcMessage.setBody(resp);
             rpcMessage.setParams(null);
             rpcMessage.setParamTypes(null);
-            requestCommon.setBody(RemoteUtils.encode(requestCommon.getProtocol(), rpcMessage));
+            message.setBody(ProtocolUtils.encode(message, rpcMessage));
         } catch (Exception e) {
-            requestCommon.setCode(500);
-            requestCommon.setBody(RemoteUtils.encode(requestCommon.getProtocol(), new RemoteExceptionBody(e)));
+            message.setCode(500);
+            message.setBody(ProtocolUtils.encode(message, new RemoteExceptionBody(e)));
         }
-        requestCommon.setDirection(true);
-        ctx.writeAndFlush(requestCommon);
+        message.setDirection(true);
+        ctx.writeAndFlush(message);
     }
 
     @SneakyThrows
@@ -51,12 +50,5 @@ public class PigeonRequestProcess implements RequestProcess {
         return classes;
     }
 
-    protected Object getHandler(Service service) {
-        Object o = serviceHandlerMap.get(service);
-        if (o == null) {
-            throw new PigeonException(service.toString() + " no handler");
-        }
-        return o;
-    }
 
 }

@@ -4,20 +4,20 @@ import com.hongcha.pigeon.core.proxy.ServiceProxy;
 import com.hongcha.pigeon.core.registry.ServiceRegistry;
 import com.hongcha.pigeon.core.registry.impl.ZookeeperServiceRegistry;
 import com.hongcha.pigeon.core.service.annotations.PigeonService;
-import com.hongcha.pigeon.core.service.handler.ServiceHandler;
+import com.hongcha.pigeon.core.service.handler.ServiceHandlerFactory;
 import com.hongcha.pigeon.core.service.metadata.Service;
 import com.hongcha.pigeon.core.utils.ClassUtil;
 import com.hongcha.remote.core.RemoteClient;
 import com.hongcha.remote.core.RemoteServer;
 import com.hongcha.remote.core.config.RemoteConfig;
 import io.netty.channel.nio.NioEventLoopGroup;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 public class Pigeon {
     private PigeonConfig pigeonConfig;
 
@@ -26,6 +26,8 @@ public class Pigeon {
     protected RemoteClient remoteClient;
 
     protected RemoteServer remoteServer;
+
+    ServiceHandlerFactory serviceHandlerFactory = new ServiceHandlerFactory();
 
     public Pigeon(PigeonConfig pigeonConfig) {
         this.pigeonConfig = pigeonConfig;
@@ -36,9 +38,9 @@ public class Pigeon {
     }
 
     public void start() {
-        Map<Service, Object> serviceObjectMap = searchPigeon();
-        startRegistry(serviceObjectMap.keySet());
-        startRemote(serviceObjectMap);
+        initServiceHandlerFactory();
+        startRegistry();
+        startRemote();
     }
 
 
@@ -46,39 +48,38 @@ public class Pigeon {
         try {
             remoteClient.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("client close error", e);
         }
         try {
             remoteServer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("server close error", e);
         }
     }
 
-    protected void startRemote(Map<Service, Object> serviceObjectMap) {
+    protected void startRemote() {
         RemoteConfig RemoteConfig = new RemoteConfig();
         RemoteConfig.setPort(pigeonConfig.getPort());
         remoteServer = new RemoteServer(RemoteConfig);
         remoteClient = new RemoteClient(RemoteConfig);
         try {
-            remoteServer.registerProcess(0, new PigeonRequestProcess(serviceObjectMap), new NioEventLoopGroup(1));
+            remoteServer.registerProcess(0, new PigeonRequestProcess(serviceHandlerFactory), new NioEventLoopGroup(1));
             remoteServer.start();
             remoteClient.start();
         } catch (Exception e) {
-
+            log.error("start remote error", e);
         }
 
     }
 
-    protected void startRegistry(Set<Service> serviceList) {
+    protected void startRegistry() {
         serviceRegistry = new ZookeeperServiceRegistry(pigeonConfig.getPort(), pigeonConfig.getRegistry());
-        serviceRegistry.addAllService(serviceList);
+        serviceRegistry.addAllService(serviceHandlerFactory.getAll().keySet());
         serviceRegistry.start();
     }
 
 
-    protected Map<Service, Object> searchPigeon() {
-        Map<Service, Object> serviceHandlerMap = new HashMap<>();
+    protected void initServiceHandlerFactory() {
         String[] scanPackages = pigeonConfig.getPackages();
         Set<Class<?>> classes = ClassUtil.getClasses(scanPackages);
         classes
@@ -92,7 +93,6 @@ public class Pigeon {
                     try {
                         handler = serviceHandler(cl);
                     } catch (Exception e) {
-                        e.printStackTrace();
                         return;
                     }
                     if (handler == null) return;
@@ -100,14 +100,11 @@ public class Pigeon {
                     for (Class<?> anInterface : interfaces) {
                         if (!(anInterface.equals(Object.class) || anInterface.equals(Serializable.class))) {
                             Service service = new Service(anInterface.getName(), group, version);
-                            ServiceHandler serviceHandler = new ServiceHandler();
-                            serviceHandler.setService(service);
-                            serviceHandler.setHandler(handler);
-                            serviceHandlerMap.put(service, handler);
+                            serviceHandlerFactory.register(service, handler);
                         }
                     }
                 });
-        return serviceHandlerMap;
+
     }
 
 

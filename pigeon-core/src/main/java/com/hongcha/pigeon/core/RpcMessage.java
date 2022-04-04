@@ -5,6 +5,7 @@ import com.hongcha.pigeon.core.service.metadata.Service;
 import java.io.Serializable;
 
 public class RpcMessage implements Serializable {
+
     /**
      * service提供商
      */
