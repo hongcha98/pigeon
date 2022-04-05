@@ -19,15 +19,11 @@ import java.util.Set;
 
 @Slf4j
 public class Pigeon {
-    private PigeonConfig pigeonConfig;
-
     protected ServiceRegistry serviceRegistry;
-
     protected RemoteClient remoteClient;
-
     protected RemoteServer remoteServer;
-
     ServiceHandlerFactory serviceHandlerFactory = new ServiceHandlerFactory();
+    private PigeonConfig pigeonConfig;
 
     public Pigeon(PigeonConfig pigeonConfig) {
         this.pigeonConfig = pigeonConfig;

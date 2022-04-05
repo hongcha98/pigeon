@@ -15,13 +15,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements Watcher {
-    private ZooKeeper zooKeeper;
-
-    private Helper helper = new Helper();
-
-    private final CountDownLatch countDownLatch = new CountDownLatch(1);
-
     private final static String PIGEON_PATH = "/pigeon";
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
+    private ZooKeeper zooKeeper;
+    private Helper helper = new Helper();
 
     public ZookeeperServiceRegistry(int port, RegistryConfig registryConfig) {
         super(port, registryConfig);
