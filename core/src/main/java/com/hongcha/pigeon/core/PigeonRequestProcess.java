@@ -7,7 +7,6 @@ import com.hongcha.remote.common.exception.RemoteExceptionBody;
 import com.hongcha.remote.common.process.Process;
 import com.hongcha.remote.core.util.ProtocolUtils;
 import io.netty.channel.ChannelHandlerContext;
-import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
 
@@ -41,8 +40,8 @@ public class PigeonRequestProcess implements Process {
         ctx.writeAndFlush(message);
     }
 
-    @SneakyThrows
-    protected Class<?>[] getParamType(String[] params) {
+
+    protected Class<?>[] getParamType(String[] params) throws ClassNotFoundException {
         Class<?>[] classes = new Class[params.length];
         for (int i = 0; i < params.length; i++) {
             classes[i] = Class.forName(params[i]);
