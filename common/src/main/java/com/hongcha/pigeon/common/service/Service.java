@@ -1,4 +1,4 @@
-package com.hongcha.pigeon.common.service.metadata;
+package com.hongcha.pigeon.common.service;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -51,7 +51,6 @@ public class Service implements Serializable {
     public int hashCode() {
         return Objects.hash(serviceName, group, version);
     }
-
 
     @Override
     public String toString() {

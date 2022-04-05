@@ -1,7 +1,7 @@
 package com.hongcha.pigeon.spring;
 
-import com.hongcha.pigeon.core.Pigeon;
 import com.hongcha.pigeon.common.service.annotations.PigeonReference;
+import com.hongcha.pigeon.core.Pigeon;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +37,13 @@ public class PigeonReferenceBeanPostProcessor extends InstantiationAwareBeanPost
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         List<Field> list = getAllField(bean.getClass());
         for (Field field : list) {
-            PigeonReference annotation = field.getAnnotation(PigeonReference.class);
-            if (annotation != null) {
+            PigeonReference pigeonReference = field.getAnnotation(PigeonReference.class);
+            if (pigeonReference != null) {
                 field.setAccessible(true);
-                String group = annotation.group();
-                String version = annotation.version();
+                String group = pigeonReference.group();
+                String version = pigeonReference.version();
                 try {
-                    field.set(bean, pigeon.getProxy(field.getType(), group, version));
+                    field.set(bean, pigeon.getProxy(field.getType(), pigeonReference.applicationName(), group, version, pigeonReference.loadBalance()));
                 } catch (IllegalAccessException e) {
                     throw new BeanInitializationException("PigeonReference Error", e);
                 }

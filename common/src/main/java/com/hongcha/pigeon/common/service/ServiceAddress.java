@@ -1,4 +1,4 @@
-package com.hongcha.pigeon.common.service.metadata;
+package com.hongcha.pigeon.common.service;
 
 import java.util.Objects;
 
@@ -12,6 +12,12 @@ public class ServiceAddress {
      */
     private int port;
 
+    /**
+     * 不推荐使用，主要是为了反序列化，set方法同理
+     */
+    public ServiceAddress() {
+
+    }
 
     public ServiceAddress(String ip, int port) {
         this.ip = ip;
@@ -27,6 +33,14 @@ public class ServiceAddress {
         return port;
     }
 
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -44,5 +58,10 @@ public class ServiceAddress {
     @Override
     public String toString() {
         return ip + ":" + port;
+    }
+
+    public static ServiceAddress parse(String address) {
+        String[] split = address.split(":");
+        return new ServiceAddress(split[0], Integer.valueOf(split[1]));
     }
 }

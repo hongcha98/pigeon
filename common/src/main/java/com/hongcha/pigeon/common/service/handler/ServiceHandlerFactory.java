@@ -1,6 +1,6 @@
 package com.hongcha.pigeon.common.service.handler;
 
-import com.hongcha.pigeon.common.service.metadata.Service;
+import com.hongcha.pigeon.common.service.Service;
 
 import java.util.Collections;
 import java.util.HashMap;

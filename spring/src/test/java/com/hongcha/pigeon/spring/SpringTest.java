@@ -23,8 +23,9 @@ public class SpringTest {
 
     @Test
     public void test() {
-        Pigeon pigeon = consumer.getBean(Pigeon.class);
-        TestService testService = pigeon.getProxy(TestService.class);
+        Pigeon providerPigeon = provider.getBean(Pigeon.class);
+        Pigeon consumerPigeon = consumer.getBean(Pigeon.class);
+        TestService testService = consumerPigeon.getProxy(providerPigeon.getPigeonConfig().getApplicationName(), "random", TestService.class);
         testService.echo("hello world");
     }
 
@@ -35,7 +36,7 @@ public class SpringTest {
     }
 
     @SpringBootApplication(scanBasePackages = "com.hongcha.pigeon.spring.service.consumer")
-    @PropertySource (value = "classpath:consumer.properties")
+    @PropertySource(value = "classpath:consumer.properties")
     static class Consumer {
 
     }

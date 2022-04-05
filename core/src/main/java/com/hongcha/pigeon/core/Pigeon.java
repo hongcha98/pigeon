@@ -1,12 +1,13 @@
 package com.hongcha.pigeon.core;
 
 import com.hongcha.pigeon.common.error.PigeonException;
+import com.hongcha.pigeon.common.service.Service;
 import com.hongcha.pigeon.common.service.annotations.PigeonService;
 import com.hongcha.pigeon.common.service.handler.ServiceHandlerFactory;
-import com.hongcha.pigeon.common.service.metadata.Service;
 import com.hongcha.pigeon.core.proxy.ServiceProxy;
 import com.hongcha.pigeon.core.utils.ClassUtil;
 import com.hongcha.pigeon.registry.RegistryConfig;
+import com.hongcha.pigeon.registry.RegistryMetadata;
 import com.hongcha.pigeon.registry.ServiceRegistry;
 import com.hongcha.remote.common.spi.SpiLoader;
 import com.hongcha.remote.core.RemoteClient;
@@ -67,7 +68,7 @@ public class Pigeon {
 
     protected void startRemote() {
         RemoteConfig RemoteConfig = new RemoteConfig();
-        RemoteConfig.setPort(pigeonConfig.getPort());
+        RemoteConfig.setPort(pigeonConfig.getApplicationAddress().getPort());
         remoteServer = new RemoteServer(RemoteConfig);
         remoteClient = new RemoteClient(RemoteConfig);
         try {
@@ -81,8 +82,11 @@ public class Pigeon {
     }
 
     protected void startRegistry() {
-        serviceRegistry = SpiLoader.load(ServiceRegistry.class, pigeonConfig.getRegistry().getType(), new Class[]{int.class, RegistryConfig.class}, new Object[]{pigeonConfig.getPort(), pigeonConfig.getRegistry()});
-        serviceRegistry.addAllService(serviceHandlerFactory.getAll().keySet());
+        RegistryMetadata registryMetadata = new RegistryMetadata();
+        registryMetadata.setApplicationName(pigeonConfig.getApplicationName());
+        registryMetadata.setServiceAddress(pigeonConfig.getApplicationAddress());
+        registryMetadata.setServiceList(serviceHandlerFactory.getAll().keySet());
+        serviceRegistry = SpiLoader.load(ServiceRegistry.class, pigeonConfig.getRegistry().getType(), new Class[]{RegistryMetadata.class, RegistryConfig.class}, new Object[]{registryMetadata, pigeonConfig.getRegistry()});
         serviceRegistry.start();
     }
 
@@ -120,14 +124,14 @@ public class Pigeon {
         return cl.newInstance();
     }
 
-    public <T> T getProxy(Class<T> clazz) {
-        return getProxy(clazz, "default", "default");
+    public <T> T getProxy(String applicationName, String loadBalance, Class<T> clazz) {
+        return getProxy(clazz, applicationName, "default", "default", loadBalance);
     }
 
 
-    public <T> T getProxy(Class<T> clazz, String group, String version) {
+    public <T> T getProxy(Class<T> clazz, String applicationName, String group, String version, String loadBalance) {
         Service service = new Service(clazz.getName(), group, version);
-        return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, new ServiceProxy(service, serviceRegistry, remoteClient));
+        return (T) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, new ServiceProxy(applicationName, service, loadBalance, serviceRegistry, remoteClient));
     }
 
 }

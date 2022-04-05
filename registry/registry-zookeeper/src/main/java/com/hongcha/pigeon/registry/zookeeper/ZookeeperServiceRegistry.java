@@ -1,92 +1,83 @@
 package com.hongcha.pigeon.registry.zookeeper;
 
+import com.alibaba.fastjson.JSON;
 import com.hongcha.pigeon.common.error.PigeonException;
-import com.hongcha.pigeon.common.service.metadata.Service;
-import com.hongcha.pigeon.common.service.metadata.ServiceAddress;
+import com.hongcha.pigeon.common.service.Service;
+import com.hongcha.pigeon.common.service.ServiceAddress;
 import com.hongcha.pigeon.registry.AbstractServiceRegistry;
 import com.hongcha.pigeon.registry.RegistryConfig;
+import com.hongcha.pigeon.registry.RegistryMetadata;
 import com.hongcha.remote.common.spi.SpiDescribe;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 @SpiDescribe(name = "zookeeper", order = 0)
 public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements Watcher {
     private final static String PIGEON_PATH = "/pigeon";
+    private final static String NODE = "node";
     private final CountDownLatch countDownLatch = new CountDownLatch(1);
     private ZooKeeper zooKeeper;
     private Helper helper = new Helper();
 
-    public ZookeeperServiceRegistry(int port, RegistryConfig registryConfig) {
-        super(port, registryConfig);
+    public ZookeeperServiceRegistry(RegistryMetadata registryMetadata, RegistryConfig registryConfig) {
+        super(registryMetadata, registryConfig);
     }
+
 
     @Override
     protected void init() {
         try {
             zooKeeper = new ZooKeeper(getRegistryConfig().getAddress(), 5000, this);
             countDownLatch.await();
-            helper.create(PIGEON_PATH, "pigeon-rpc", CreateMode.PERSISTENT);
+            helper.create(PIGEON_PATH, "pigeon-rpc", CreateMode.PERSISTENT, false);
         } catch (Exception e) {
             throw new PigeonException("zk error", e);
         }
     }
 
     @Override
-    protected void doRegistry(Service service) {
-        String servicePath = registryService(service.getServiceName());
-        registryRelease(servicePath, service.getGroup(), service.getVersion());
+    protected void doStart() {
+        RegistryMetadata registryMetadata = getRegistryMetadata();
+        /**
+         * 注册应用，data为serviceList
+         */
+        String applicationPath = PIGEON_PATH + "/" + registryMetadata.getApplicationName();
+        helper.create(applicationPath, JSON.toJSONString(registryMetadata.getServiceList()), CreateMode.PERSISTENT, true);
+        /**
+         * 创建应用的临时顺序节点，data为serviceAddress
+         */
+        String applicationNodePath = applicationPath + "/" + NODE;
+        helper.create(applicationNodePath, registryMetadata.getServiceAddress().toString(), CreateMode.EPHEMERAL_SEQUENTIAL, false);
     }
 
-
-    protected String registryService(String serviceName) {
-        return helper.create(getServicePath(serviceName), "", CreateMode.PERSISTENT);
-    }
-
-    private String getServicePath(String serviceName) {
-        return PIGEON_PATH + "/" + serviceName;
-    }
-
-    protected void registryRelease(String servicePath, String group, String version) {
-        helper.create(servicePath + "/" + groupVersionPathName(group, version), getLocalServiceiAddress().toString(), CreateMode.EPHEMERAL_SEQUENTIAL);
-    }
-
-    private String groupVersionPathName(String group, String version) {
-        return group + "-" + version + "-";
-    }
-
-
-    @Override
-    public ServiceAddress foundService(Service service) {
-        String servicePath = getServicePath(service.getServiceName());
-        if (helper.exists(servicePath)) {
-            try {
-                List<String> children = zooKeeper.getChildren(servicePath, true);
-                List<String> serviceList = children
-                        .stream()
-                        .filter(path -> path.startsWith(groupVersionPathName(service.getGroup(), service.getVersion())))
-                        .collect(Collectors.toList());
-                if (!serviceList.isEmpty()) {
-                    String targetSericePath = serviceList.get(new Random().nextInt(serviceList.size()));
-                    String data = helper.getData(servicePath + "/" + targetSericePath);
-                    String[] split = data.split(":");
-                    return new ServiceAddress(split[0], Integer.parseInt(split[1]));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        throw new PigeonException("未找到" + service.getServiceName() + "实现");
-    }
 
     @Override
     public void process(WatchedEvent watchedEvent) {
         countDownLatch.countDown();
+    }
+
+    @Override
+    public List<ServiceAddress> foundService(String applicationName, Service service) {
+        Exception exception = null;
+        try {
+            String applicationPath = PIGEON_PATH + "/" + applicationName;
+            String data = helper.getData(applicationPath);
+            List<Service> serviceList = JSON.parseArray(data, Service.class);
+            for (Service s : serviceList) {
+                if (s.equals(service)) {
+                    return zooKeeper.getChildren(applicationPath, null).stream().map(children -> ServiceAddress.parse(helper.getData(applicationPath + "/" + children))).collect(Collectors.toList());
+                }
+            }
+
+        } catch (Exception e) {
+            exception = e;
+        }
+        throw new PigeonException(applicationName + " not found " + service.getServiceName() + " provider", exception);
     }
 
 
@@ -104,10 +95,15 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements
         }
 
 
-        String create(String path, String data, CreateMode createMode) {
+        String create(String path, String data, CreateMode createMode, boolean updateData) {
             try {
-                if (!exists(path)) {
+                Stat stat = getStat(path);
+                if (stat == null) {
                     return zooKeeper.create(path, toByte(data), ZooDefs.Ids.OPEN_ACL_UNSAFE, createMode);
+                } else {
+                    if (updateData) {
+                        zooKeeper.setData(path, toByte(data), stat.getVersion());
+                    }
                 }
                 return path;
             } catch (Exception e) {

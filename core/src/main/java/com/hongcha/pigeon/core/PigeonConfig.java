@@ -1,21 +1,32 @@
 package com.hongcha.pigeon.core;
 
 
+import com.hongcha.pigeon.common.service.ServiceAddress;
 import com.hongcha.pigeon.registry.RegistryConfig;
 
 public class PigeonConfig {
-    private int port = 30800;
+    private String applicationName;
+
+    private ServiceAddress applicationAddress;
 
     private String[] packages = new String[]{};
 
     private RegistryConfig registry;
 
-    public int getPort() {
-        return port;
+    public String getApplicationName() {
+        return applicationName;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public ServiceAddress getApplicationAddress() {
+        return applicationAddress;
+    }
+
+    public void setApplicationAddress(ServiceAddress applicationAddress) {
+        this.applicationAddress = applicationAddress;
     }
 
     public String[] getPackages() {
