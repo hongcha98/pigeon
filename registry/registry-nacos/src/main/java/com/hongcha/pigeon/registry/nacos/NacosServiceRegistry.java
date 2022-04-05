@@ -6,6 +6,7 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.hongcha.pigeon.common.error.PigeonException;
 import com.hongcha.pigeon.common.service.Service;
 import com.hongcha.pigeon.common.service.ServiceAddress;
 import com.hongcha.pigeon.registry.AbstractServiceRegistry;
@@ -26,25 +27,27 @@ import java.util.stream.Collectors;
 
 @SpiDescribe(name = "nacos")
 public class NacosServiceRegistry extends AbstractServiceRegistry {
-    private static final Logger log = LoggerFactory.getLogger(NacosServiceRegistry.class);
-
-    private static final String METADATA_KEY = "serverList";
-
     public static final String GROUP_NAME = "groupName";
-
-    private ScheduledExecutorService scheduledExecutorService;
-
-    private NamingService namingService;
-
+    private static final Logger LOG = LoggerFactory.getLogger(NacosServiceRegistry.class);
+    private static final String METADATA_KEY = "serverList";
     private final String groupName;
+    private ScheduledExecutorService scheduledExecutorService;
+    private NamingService namingService;
 
     public NacosServiceRegistry(RegistryMetadata registryMetadata, RegistryConfig registryConfig) {
         super(registryMetadata, registryConfig);
         groupName = getRegistryConfig().getProperty().get(GROUP_NAME);
     }
 
+    private static void propertiesPut(Properties properties, Object key, Object value) {
+        if (key != null && value != null) {
+            properties.put(key, value);
+        }
+    }
+
     @Override
     public List<ServiceAddress> foundService(String applicationName, Service service) {
+        Exception exception = null;
         try {
             List<Instance> instanceList = namingService.getAllInstances(applicationName, groupName);
             return instanceList.stream().filter(instance -> {
@@ -59,9 +62,9 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
                 return false;
             }).map(instance -> new ServiceAddress(instance.getIp(), instance.getPort())).collect(Collectors.toList());
         } catch (Exception e) {
-
+            exception = e;
         }
-        return null;
+        throw new PigeonException(applicationName + " not found " + service.getServiceName() + " provider", exception);
     }
 
     @Override
@@ -93,15 +96,13 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
             try {
                 namingService.registerInstance(registryMetadata.getApplicationName(), groupName, instance);
             } catch (NacosException e) {
-                log.error("nacos registry error", e);
+                LOG.error("nacos registry error", e);
             }
         }, 1, 1, TimeUnit.SECONDS);
     }
 
-    private static void propertiesPut(Properties properties, Object key, Object value) {
-        if (key != null && value != null) {
-            properties.put(key, value);
-        }
-    }
+    @Override
+    public void close() {
 
+    }
 }

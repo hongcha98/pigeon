@@ -22,5 +22,9 @@ public interface ServiceRegistry extends FoundService {
      */
     void start();
 
+    /**
+     * 关闭服务
+     */
+    void close();
 
 }

@@ -10,14 +10,17 @@ import com.hongcha.pigeon.registry.RegistryMetadata;
 import com.hongcha.remote.common.spi.SpiDescribe;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-@SpiDescribe(name = "zookeeper", order = 0)
+@SpiDescribe(name = "zookeeper")
 public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements Watcher {
+    private static final Logger LOG = LoggerFactory.getLogger(ZookeeperServiceRegistry.class);
     private final static String PIGEON_PATH = "/pigeon";
     private final static String NODE = "node";
     private final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -31,7 +34,6 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements
 
     @Override
     protected void init() throws Exception {
-
         zooKeeper = new ZooKeeper(getRegistryConfig().getAddress(), 5000, this);
         countDownLatch.await();
         helper.create(PIGEON_PATH, "pigeon-rpc", CreateMode.PERSISTENT, false);
@@ -76,6 +78,17 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements
             exception = e;
         }
         throw new PigeonException(applicationName + " not found " + service.getServiceName() + " provider", exception);
+    }
+
+    @Override
+    public void close() {
+        if (zooKeeper != null) {
+            try {
+                zooKeeper.close();
+            } catch (InterruptedException e) {
+                LOG.error("zk close error", e);
+            }
+        }
     }
 
 

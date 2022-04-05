@@ -22,7 +22,7 @@ import java.lang.reflect.Proxy;
 import java.util.Set;
 
 public class Pigeon {
-    private static final Logger log = LoggerFactory.getLogger(Pigeon.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Pigeon.class);
     protected ServiceRegistry serviceRegistry;
     protected RemoteClient remoteClient;
     protected RemoteServer remoteServer;
@@ -38,31 +38,36 @@ public class Pigeon {
     }
 
     public void start() {
-        log.info("pigeon start : {}", pigeonConfig);
+        LOG.info("pigeon start : {}", pigeonConfig);
         try {
             initServiceHandlerFactory();
             startRegistry();
             startRemote();
         } catch (Exception e) {
-            log.error("pigeon start error ", e);
+            LOG.error("pigeon start error ", e);
             throw new PigeonException(e);
         }
-        log.info("pigeon successfully started");
-        log.info("pigeon serviceHandlerFactory : {}", serviceHandlerFactory);
+        LOG.info("pigeon successfully started");
+        LOG.info("pigeon serviceHandlerFactory : {}", serviceHandlerFactory);
 
     }
 
 
     public void close() {
         try {
+            serviceRegistry.close();
+        } catch (Exception e) {
+            LOG.error("serviceRegistry close error", e);
+        }
+        try {
             remoteClient.close();
         } catch (Exception e) {
-            log.error("client close error", e);
+            LOG.error("client close error", e);
         }
         try {
             remoteServer.close();
         } catch (Exception e) {
-            log.error("server close error", e);
+            LOG.error("server close error", e);
         }
     }
 
@@ -76,7 +81,7 @@ public class Pigeon {
             remoteServer.start();
             remoteClient.start();
         } catch (Exception e) {
-            log.error("start remote error", e);
+            LOG.error("start remote error", e);
         }
 
     }

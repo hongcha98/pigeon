@@ -27,18 +27,18 @@ public class RegistryConfig {
     public RegistryConfig() {
     }
 
+    public RegistryConfig(String address, String username, String password) {
+        this.address = address;
+        this.username = username;
+        this.password = password;
+    }
+
     public Map<String, String> getProperty() {
         return property;
     }
 
     public void setProperty(Map<String, String> property) {
         this.property = property;
-    }
-
-    public RegistryConfig(String address, String username, String password) {
-        this.address = address;
-        this.username = username;
-        this.password = password;
     }
 
     public String getType() {
