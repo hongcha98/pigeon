@@ -38,6 +38,13 @@
             <version>${version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${groupId}</groupId>
+            <artifactId>registry-zookeeper</artifactId>
+            <version>${version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

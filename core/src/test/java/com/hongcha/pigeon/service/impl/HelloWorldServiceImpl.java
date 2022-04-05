@@ -1,6 +1,6 @@
 package com.hongcha.pigeon.service.impl;
 
-import com.hongcha.pigeon.core.service.annotations.PigeonService;
+import com.hongcha.pigeon.common.service.annotations.PigeonService;
 import com.hongcha.pigeon.service.HelloWorldService;
 
 @PigeonService

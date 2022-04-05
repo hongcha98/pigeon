@@ -10,7 +10,8 @@
     <modules>
         <module>core</module>
         <module>spring</module>
-        <module>example</module>
+        <module>common</module>
+        <module>registry</module>
     </modules>
     <packaging>pom</packaging>
 

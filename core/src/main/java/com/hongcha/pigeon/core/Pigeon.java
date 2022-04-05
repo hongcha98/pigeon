@@ -1,12 +1,14 @@
 package com.hongcha.pigeon.core;
 
+import com.hongcha.pigeon.common.error.PigeonException;
+import com.hongcha.pigeon.common.service.annotations.PigeonService;
+import com.hongcha.pigeon.common.service.handler.ServiceHandlerFactory;
+import com.hongcha.pigeon.common.service.metadata.Service;
 import com.hongcha.pigeon.core.proxy.ServiceProxy;
-import com.hongcha.pigeon.core.registry.ServiceRegistry;
-import com.hongcha.pigeon.core.registry.impl.ZookeeperServiceRegistry;
-import com.hongcha.pigeon.core.service.annotations.PigeonService;
-import com.hongcha.pigeon.core.service.handler.ServiceHandlerFactory;
-import com.hongcha.pigeon.core.service.metadata.Service;
 import com.hongcha.pigeon.core.utils.ClassUtil;
+import com.hongcha.pigeon.registry.RegistryConfig;
+import com.hongcha.pigeon.registry.ServiceRegistry;
+import com.hongcha.remote.common.spi.SpiLoader;
 import com.hongcha.remote.core.RemoteClient;
 import com.hongcha.remote.core.RemoteServer;
 import com.hongcha.remote.core.config.RemoteConfig;
@@ -34,9 +36,18 @@ public class Pigeon {
     }
 
     public void start() {
-        initServiceHandlerFactory();
-        startRegistry();
-        startRemote();
+        log.info("pigeon start : {}", pigeonConfig);
+        try {
+            initServiceHandlerFactory();
+            startRegistry();
+            startRemote();
+        } catch (Exception e) {
+            log.error("pigeon start error ", e);
+            throw new PigeonException(e);
+        }
+        log.info("pigeon successfully started");
+        log.info("pigeon serviceHandlerFactory : {}", serviceHandlerFactory);
+
     }
 
 
@@ -69,7 +80,7 @@ public class Pigeon {
     }
 
     protected void startRegistry() {
-        serviceRegistry = new ZookeeperServiceRegistry(pigeonConfig.getPort(), pigeonConfig.getRegistry());
+        serviceRegistry = SpiLoader.load(ServiceRegistry.class, pigeonConfig.getRegistry().getType(), new Class[]{int.class, RegistryConfig.class}, new Object[]{pigeonConfig.getPort(), pigeonConfig.getRegistry()});
         serviceRegistry.addAllService(serviceHandlerFactory.getAll().keySet());
         serviceRegistry.start();
     }

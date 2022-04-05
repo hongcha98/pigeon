@@ -1,7 +1,7 @@
 package com.hongcha.pigeon.spring;
 
 import com.hongcha.pigeon.core.Pigeon;
-import com.hongcha.pigeon.core.service.annotations.PigeonReference;
+import com.hongcha.pigeon.common.service.annotations.PigeonReference;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;

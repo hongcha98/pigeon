@@ -19,9 +19,22 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-            <version>${zk.version}</version>
+            <groupId>${groupId}</groupId>
+            <artifactId>common</artifactId>
+            <version>${version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${groupId}</groupId>
+            <artifactId>registry-core</artifactId>
+            <version>${version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${groupId}</groupId>
+            <artifactId>registry-zookeeper</artifactId>
+            <version>${version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

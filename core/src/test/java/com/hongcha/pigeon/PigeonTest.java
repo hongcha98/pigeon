@@ -2,7 +2,7 @@ package com.hongcha.pigeon;
 
 import com.hongcha.pigeon.core.Pigeon;
 import com.hongcha.pigeon.core.PigeonConfig;
-import com.hongcha.pigeon.core.registry.RegistryConfig;
+import com.hongcha.pigeon.registry.RegistryConfig;
 import com.hongcha.pigeon.service.HelloWorldService;
 import org.junit.Test;
 

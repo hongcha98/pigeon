@@ -1,9 +1,9 @@
 package com.hongcha.pigeon.core.proxy;
 
+import com.hongcha.pigeon.common.service.metadata.Service;
+import com.hongcha.pigeon.common.service.metadata.ServiceAddress;
 import com.hongcha.pigeon.core.RpcMessage;
-import com.hongcha.pigeon.core.registry.FoundService;
-import com.hongcha.pigeon.core.service.metadata.Service;
-import com.hongcha.pigeon.core.service.metadata.ServiceAddress;
+import com.hongcha.pigeon.registry.FoundService;
 import com.hongcha.remote.common.Message;
 import com.hongcha.remote.core.RemoteClient;
 

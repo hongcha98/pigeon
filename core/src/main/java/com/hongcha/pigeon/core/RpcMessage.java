@@ -1,6 +1,6 @@
 package com.hongcha.pigeon.core;
 
-import com.hongcha.pigeon.core.service.metadata.Service;
+import com.hongcha.pigeon.common.service.metadata.Service;
 
 import java.io.Serializable;
 

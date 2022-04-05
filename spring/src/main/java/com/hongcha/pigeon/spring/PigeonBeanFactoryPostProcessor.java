@@ -1,6 +1,6 @@
 package com.hongcha.pigeon.spring;
 
-import com.hongcha.pigeon.core.service.annotations.PigeonService;
+import com.hongcha.pigeon.common.service.annotations.PigeonService;
 import com.hongcha.pigeon.core.utils.ClassUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -18,7 +18,7 @@ public class PigeonBeanFactoryPostProcessor implements BeanDefinitionRegistryPos
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        String[] scanPackages = environment.getRequiredProperty(PigeonSpringConstant.PREFIX + "." + PigeonSpringConstant.PACKAGES, String[].class);
+        String[] scanPackages = environment.getProperty(PigeonSpringConstant.PREFIX + "." + PigeonSpringConstant.PACKAGES, String[].class, new String[]{});
         Set<Class<?>> classes = ClassUtil.getClasses(scanPackages);
         classes
                 .stream()

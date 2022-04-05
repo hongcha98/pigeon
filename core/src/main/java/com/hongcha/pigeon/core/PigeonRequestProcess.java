@@ -1,7 +1,7 @@
 package com.hongcha.pigeon.core;
 
-import com.hongcha.pigeon.core.service.handler.ServiceHandlerFactory;
-import com.hongcha.pigeon.core.service.metadata.Service;
+import com.hongcha.pigeon.common.service.handler.ServiceHandlerFactory;
+import com.hongcha.pigeon.common.service.metadata.Service;
 import com.hongcha.remote.common.Message;
 import com.hongcha.remote.common.exception.RemoteExceptionBody;
 import com.hongcha.remote.common.process.Process;

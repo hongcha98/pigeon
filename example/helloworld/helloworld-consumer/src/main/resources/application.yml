@@ -1,8 +1,0 @@
-pigeon:
-  config:
-    port: 30802
-    packages:
-    registry:
-      address: 127.0.0.1:2181
-      username:
-      password:
