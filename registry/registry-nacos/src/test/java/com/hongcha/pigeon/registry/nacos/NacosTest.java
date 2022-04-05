@@ -45,7 +45,5 @@ public class NacosTest {
                 Assert.assertEquals(serviceAddress, registryMetadata.getServiceAddress());
             }
         }
-        // 测试是否正常发送心跳
-        Thread.sleep(20000);
     }
 }
