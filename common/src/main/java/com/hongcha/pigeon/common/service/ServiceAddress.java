@@ -24,18 +24,21 @@ public class ServiceAddress {
         this.port = port;
     }
 
+    public static ServiceAddress parse(String address) {
+        String[] split = address.split(":");
+        return new ServiceAddress(split[0], Integer.valueOf(split[1]));
+    }
+
     public String getIp() {
         return ip;
     }
 
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
     public int getPort() {
         return port;
-    }
-
-
-    public void setIp(String ip) {
-        this.ip = ip;
     }
 
     public void setPort(int port) {
@@ -58,10 +61,5 @@ public class ServiceAddress {
     @Override
     public String toString() {
         return ip + ":" + port;
-    }
-
-    public static ServiceAddress parse(String address) {
-        String[] split = address.split(":");
-        return new ServiceAddress(split[0], Integer.valueOf(split[1]));
     }
 }
