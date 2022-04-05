@@ -30,18 +30,16 @@ public class ZookeeperServiceRegistry extends AbstractServiceRegistry implements
 
 
     @Override
-    protected void init() {
-        try {
-            zooKeeper = new ZooKeeper(getRegistryConfig().getAddress(), 5000, this);
-            countDownLatch.await();
-            helper.create(PIGEON_PATH, "pigeon-rpc", CreateMode.PERSISTENT, false);
-        } catch (Exception e) {
-            throw new PigeonException("zk error", e);
-        }
+    protected void init() throws Exception {
+
+        zooKeeper = new ZooKeeper(getRegistryConfig().getAddress(), 5000, this);
+        countDownLatch.await();
+        helper.create(PIGEON_PATH, "pigeon-rpc", CreateMode.PERSISTENT, false);
+
     }
 
     @Override
-    protected void doStart() {
+    protected void doStart() throws Exception {
         RegistryMetadata registryMetadata = getRegistryMetadata();
         /**
          * 注册应用，data为serviceList

@@ -14,6 +14,7 @@
     <modules>
         <module>registry-core</module>
         <module>registry-zookeeper</module>
+        <module>registry-nacos</module>
     </modules>
 
     <properties>

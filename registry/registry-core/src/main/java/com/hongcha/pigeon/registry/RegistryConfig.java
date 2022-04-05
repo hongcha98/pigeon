@@ -1,7 +1,11 @@
 package com.hongcha.pigeon.registry;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RegistryConfig {
     private String type = "zookeeper";
+
     /**
      * 连接地址 ip:port ,号分割
      */
@@ -15,7 +19,20 @@ public class RegistryConfig {
      */
     private String password;
 
+    /**
+     * 其他属性
+     */
+    private Map<String, String> property = new HashMap<>();
+
     public RegistryConfig() {
+    }
+
+    public Map<String, String> getProperty() {
+        return property;
+    }
+
+    public void setProperty(Map<String, String> property) {
+        this.property = property;
     }
 
     public RegistryConfig(String address, String username, String password) {

@@ -1,5 +1,7 @@
 package com.hongcha.pigeon.registry;
 
+import com.hongcha.pigeon.common.error.PigeonException;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractServiceRegistry implements ServiceRegistry {
@@ -27,15 +29,20 @@ public abstract class AbstractServiceRegistry implements ServiceRegistry {
     @Override
     public synchronized void start() {
         if (isStart.compareAndSet(false, true)) {
-            init();
-            doStart();
+            try {
+                init();
+                doStart();
+            } catch (Exception e) {
+                throw new PigeonException(e);
+            }
+
         }
 
     }
 
-    protected abstract void init();
+    protected abstract void init() throws Exception;
 
-    protected abstract void doStart();
+    protected abstract void doStart() throws Exception;
 
     @Override
     public RegistryMetadata getRegistryMetadata() {

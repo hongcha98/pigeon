@@ -41,7 +41,6 @@
         <dependency>
             <groupId>com.hongcha.remoting</groupId>
             <artifactId>remote-all</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
     </dependencies>
