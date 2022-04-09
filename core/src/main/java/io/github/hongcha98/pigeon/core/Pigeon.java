@@ -56,18 +56,10 @@ public class Pigeon {
     public void close() {
         try {
             serviceRegistry.close();
-        } catch (Exception e) {
-            LOG.error("serviceRegistry close error", e);
-        }
-        try {
+            remoteServer.close();
             remoteClient.close();
         } catch (Exception e) {
-            LOG.error("client close error", e);
-        }
-        try {
-            remoteServer.close();
-        } catch (Exception e) {
-            LOG.error("server close error", e);
+            LOG.error("pigeon close error", e);
         }
     }
 
@@ -76,14 +68,9 @@ public class Pigeon {
         RemoteConfig.setPort(pigeonConfig.getApplicationAddress().getPort());
         remoteServer = new RemoteServer(RemoteConfig);
         remoteClient = new RemoteClient(RemoteConfig);
-        try {
-            remoteServer.registerProcess(0, new PigeonRequestProcess(serviceHandlerFactory), new NioEventLoopGroup(1));
-            remoteServer.start();
-            remoteClient.start();
-        } catch (Exception e) {
-            LOG.error("start remote error", e);
-        }
-
+        remoteServer.registerProcess(0, new PigeonRequestProcess(serviceHandlerFactory), new NioEventLoopGroup(1));
+        remoteServer.start();
+        remoteClient.start();
     }
 
     protected void startRegistry() {
