@@ -3,13 +3,13 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>parent</artifactId>
-        <groupId>com.hongcha.pigeon</groupId>
+        <groupId>io.github.hongcha98</groupId>
+        <artifactId>pigeon-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>core</artifactId>
+    <artifactId>pigeon-core</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -20,26 +20,26 @@
 
         <dependency>
             <groupId>${groupId}</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>pigeon-common</artifactId>
             <version>${version}</version>
         </dependency>
 
         <dependency>
             <groupId>${groupId}</groupId>
-            <artifactId>registry-core</artifactId>
+            <artifactId>pigeon-registry-core</artifactId>
             <version>${version}</version>
         </dependency>
 
         <dependency>
             <groupId>${groupId}</groupId>
-            <artifactId>registry-zookeeper</artifactId>
+            <artifactId>pigeon-registry-zookeeper</artifactId>
             <version>${version}</version>
             <optional>true</optional>
         </dependency>
 
 
         <dependency>
-            <groupId>com.hongcha.remoting</groupId>
+            <groupId>io.github.hongcha98</groupId>
             <artifactId>remote-all</artifactId>
         </dependency>
 
