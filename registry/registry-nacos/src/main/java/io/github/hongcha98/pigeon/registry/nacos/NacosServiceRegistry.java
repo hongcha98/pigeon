@@ -20,9 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @SpiDescribe(name = "nacos")
@@ -31,7 +28,6 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(NacosServiceRegistry.class);
     private static final String METADATA_KEY = "serverList";
     private final String groupName;
-    private ScheduledExecutorService scheduledExecutorService;
     private NamingService namingService;
 
     public NacosServiceRegistry(RegistryMetadata registryMetadata, RegistryConfig registryConfig) {
@@ -90,19 +86,15 @@ public class NacosServiceRegistry extends AbstractServiceRegistry {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(METADATA_KEY, JSON.toJSONString(registryMetadata.getServiceList()));
         instance.setMetadata(metadata);
-        scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
         namingService.registerInstance(registryMetadata.getApplicationName(), groupName, instance);
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            try {
-                namingService.registerInstance(registryMetadata.getApplicationName(), groupName, instance);
-            } catch (NacosException e) {
-                LOG.error("nacos registry error", e);
-            }
-        }, 1, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void close() {
-
+        try {
+            namingService.shutDown();
+        } catch (NacosException e) {
+            LOG.error("namingService close error", e);
+        }
     }
 }
